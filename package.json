@@ -1,15 +1,19 @@
 {
-  "name": "react-example",
+  "name": "inovasyon-etkinlik-ajandasi",
+  "description": "Masaustu ve mobil takvim senkronizasyonu - Yapay zeka destekli etkinlik ve gorev yonetim sistemi",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
     "generate:pdf": "tsx scripts/generatePdfReport.ts",
-    "build": "tsx scripts/generatePdfReport.ts && vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:pdf": "tsx scripts/generatePdfReport.ts",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "echo \"Testler henuz eklenmedi. Lutfen /tests dizinine test dosyalari ekleyin.\" && exit 0",
+    "test:health": "curl -s http://localhost:3000/api/health || echo 'Server calismiyor'"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
