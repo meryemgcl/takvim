@@ -1,6 +1,6 @@
 {
   "name": "İnovasyon & Etkinlik Ajandası",
   "description": "TÜBİTAK, Ar-Ge Proje Pazarı, CEZERİ/FERGANİ stajları, Akbank Yapay Zeka ve akademik süreçlerinizi organize edip Google Takvim ile senkronize eden inovasyon ve kariyer takvimi.",
-  "requestFramePermissions": ["microphone"],
+  "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

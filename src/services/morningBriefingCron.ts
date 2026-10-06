@@ -1,6 +1,7 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { CalendarEvent, GoogleTaskItem, TaskItem } from '../types';
 import { sendMorningBriefingEmail, MorningBriefingData } from './gmailService';
+import { sseManager } from '../server/asyncQueueManager';
 
 export interface MorningBriefingExecutionParams {
   accessToken?: string;
@@ -117,6 +118,30 @@ export async function executeMorningBriefing(
     criticalDeliverablesCount: criticalDeliverables.length,
     message: emailResult.message
   };
+
+  // TYPE_3: [MORNING_BRIEFING] "🌅 Sabah 06:00 Brifingi: Günün kritik P0 planı hazır."
+  sseManager.broadcast({
+    type: 'MORNING_BRIEFING',
+    message: '🌅 Sabah 06:00 Brifingi: Günün kritik P0 planı hazır.',
+    timestamp: new Date().toISOString(),
+    data: {
+      report,
+      criticalCount: criticalDeliverables.length,
+      todayTasksCount: todayTasks.length
+    }
+  });
+
+  // Eğer devredilen görev varsa TYPE_2 bildirimini de yayınla
+  if (rolledOverTasks.length > 0) {
+    sseManager.broadcast({
+      type: 'ROLLOVER_COMPLETED',
+      message: `↩️ Görev Devri: ${rolledOverTasks.length} adet dün görevi bugüne taşındı.`,
+      timestamp: new Date().toISOString(),
+      data: {
+        rolledCount: rolledOverTasks.length
+      }
+    });
+  }
 
   lastReport = report;
   return report;

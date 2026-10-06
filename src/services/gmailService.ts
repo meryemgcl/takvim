@@ -89,36 +89,87 @@ export function buildCosmicRoyalBriefingHtml(data: MorningBriefingData): string 
     }).join('');
   }
 
-  // 2. Bugün Yapılacak Google Görevleri HTML
-  let todayTasksHtml = '';
-  if (todayTasks.length === 0) {
-    todayTasksHtml = `
-      <div style="background: #111726; border: 1px dashed #263047; border-radius: 12px; padding: 14px; text-align: center; color: #94A3B8; font-size: 13px;">
-        ✅ Bugün için bekleyen yeni görev kaydı yok.
+  // 2. SMART DIGEST: Görevleri Öncelik Seviyesine Göre Ayrıştır (P0/P1 vs P2/P3)
+  const p0p1Tasks: any[] = [];
+  const backgroundTasks: any[] = [];
+
+  todayTasks.forEach(t => {
+    const isP0orP1 = t.priority === 'critical' || t.priority === 'high' || 
+      t.title.includes('🚨') || t.title.includes('⚡') || 
+      t.title.includes('[P0]') || t.title.includes('[P1]');
+    if (isP0orP1) {
+      p0p1Tasks.push(t);
+    } else {
+      backgroundTasks.push(t);
+    }
+  });
+
+  // P0 / P1 Yüksek Öncelikli Görevler HTML (Vurgulu ve Zihinsel Odak Sağlayan)
+  let p0p1TasksHtml = '';
+  if (p0p1Tasks.length === 0) {
+    p0p1TasksHtml = `
+      <div style="background: #111726; border: 1px dashed #263047; border-radius: 10px; padding: 12px; text-align: center; color: #94A3B8; font-size: 12px;">
+        🎯 Bugün için kritik blok (P0/P1) bulunmamaktadır.
       </div>
     `;
   } else {
-    todayTasksHtml = todayTasks.map((t, idx) => {
-      const priorityColor = 
-        t.priority === 'critical' ? '#EF4444' :
-        t.priority === 'high' ? '#F59E0B' : '#6366F1';
-      const priorityLabel = 
-        t.priority === 'critical' ? 'Kritik' :
-        t.priority === 'high' ? 'Yüksek' : 'Normal';
+    p0p1TasksHtml = p0p1Tasks.map((t, idx) => {
+      const isCritical = t.priority === 'critical' || t.title.includes('🚨') || t.title.includes('[P0]');
+      const badgeColor = isCritical ? '#EF4444' : '#F59E0B';
+      const badgeText = isCritical ? '🚨 [P0] Kritik' : '⚡ [P1] Yüksek';
 
       return `
-        <div style="background: #151B2B; border: 1px solid #263047; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-          <div style="font-size: 13px; font-weight: 600; color: #F1F5F9; flex: 1;">
-            <span style="color: #6366F1; margin-right: 6px;">▫️</span> ${escapeHtml(t.title)}
-            ${t.category ? `<span style="font-size: 10px; background: #1E273D; color: #94A3B8; padding: 2px 6px; border-radius: 4px; margin-left: 6px; border: 1px solid #263047;">${escapeHtml(t.category)}</span>` : ''}
+        <div style="background: #1A1F30; border: 1px solid ${badgeColor}50; border-left: 4px solid ${badgeColor}; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: ${badgeColor}; background: ${badgeColor}20; padding: 2px 8px; border-radius: 6px; border: 1px solid ${badgeColor}40;">
+              ${badgeText}
+            </span>
+            ${t.category ? `<span style="font-size: 10px; color: #94A3B8; background: #0B0F19; padding: 2px 6px; border-radius: 4px;">${escapeHtml(t.category)}</span>` : ''}
           </div>
-          <span style="font-size: 10px; font-weight: 700; color: ${priorityColor}; background: ${priorityColor}15; padding: 2px 6px; border-radius: 4px; border: 1px solid ${priorityColor}40; white-space: nowrap; margin-left: 8px;">
-            ${priorityLabel}
-          </span>
+          <div style="font-size: 14px; font-weight: 700; color: #F8FAFC; margin-bottom: 4px;">
+            ${escapeHtml(t.title)}
+          </div>
+          ${t.notes ? `<div style="font-size: 11px; color: #CBD5E1; line-height: 1.4; white-space: pre-line; background: #0F172A; padding: 8px 10px; border-radius: 6px; margin-top: 6px;">${escapeHtml(t.notes.slice(0, 220))}${t.notes.length > 220 ? '...' : ''}</div>` : ''}
         </div>
       `;
     }).join('');
   }
+
+  // P2 / P3 Arka Plan Havuzu (Collapsible Background Pool)
+  let backgroundPoolHtml = '';
+  if (backgroundTasks.length > 0) {
+    const bgList = backgroundTasks.map(t => {
+      const isP2 = t.priority === 'medium' || t.title.includes('📌') || t.title.includes('[P2]');
+      const badgeText = isP2 ? '📌 [P2]' : 'ℹ️ [P3]';
+      return `
+        <div style="background: #0E1322; border: 1px solid #1E273D; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 12px; color: #CBD5E1; flex: 1;">
+            <span style="color: #6366F1; font-weight: 700; margin-right: 6px;">${badgeText}</span>
+            ${escapeHtml(t.title)}
+          </div>
+          ${t.category ? `<span style="font-size: 10px; color: #64748B;">${escapeHtml(t.category)}</span>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    backgroundPoolHtml = `
+      <details style="margin-top: 14px; background: #111726; border: 1px solid #263047; border-radius: 12px; padding: 12px 16px;">
+        <summary style="font-size: 12px; font-weight: 700; color: #94A3B8; cursor: pointer; user-select: none;">
+          📂 Arka Plan Havuzu (P2 / P3 Rutin ve İkincil Görevler — ${backgroundTasks.length} adet)
+        </summary>
+        <div style="margin-top: 10px; border-top: 1px dashed #1E273D; padding-top: 10px;">
+          ${bgList}
+        </div>
+      </details>
+    `;
+  }
+
+  const todayTasksHtml = `
+    <div style="margin-bottom: 8px;">
+      ${p0p1TasksHtml}
+    </div>
+    ${backgroundPoolHtml}
+  `;
 
   // 3. Dünden Kalan & Bugüne Devredilen Görevler (Amber / Uyarı Kutusu)
   let rolledOverSectionHtml = '';

@@ -133,18 +133,37 @@ export const AiParseModal: React.FC<AiParseModalProps> = ({
                 <span className="text-emerald-600 text-xs font-medium">✓ Başarıyla çözümlendi</span>
               </h4>
 
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
                 {parsedPreview.map((ev, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-indigo-50/50 border border-indigo-100 flex items-start justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-900">{ev.title}</p>
-                      <p className="text-slate-500 text-[11px] mt-0.5">
-                        {ev.startDate} | Yer: {ev.location || 'Belirtilmedi'}
-                      </p>
+                  <div key={idx} className="p-3 rounded-xl bg-indigo-50/50 border border-indigo-100 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-slate-900 text-xs">{ev.title}</p>
+                        <p className="text-slate-500 text-[11px] mt-0.5">
+                          🕒 {ev.startDate.replace('T', ' ')} | 📍 {ev.location || 'Online'}
+                        </p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-800 font-semibold shrink-0">
+                        {ev.type}
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-800 font-medium">
-                      {ev.type}
-                    </span>
+
+                    {/* 3-Stage Subtasks / Deliverables Display */}
+                    {ev.deliverables && ev.deliverables.length > 0 && (
+                      <div className="pt-2 border-t border-indigo-100/80 space-y-1">
+                        <span className="text-[10px] font-bold text-slate-600 block uppercase tracking-wider">
+                          Otonom Görev Akışı (3 Aşama):
+                        </span>
+                        <div className="space-y-1">
+                          {ev.deliverables.map((del, dIdx) => (
+                            <div key={dIdx} className="text-[11px] text-slate-700 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                              <span>{del.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

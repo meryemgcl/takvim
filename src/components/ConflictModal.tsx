@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Clock, Calendar, Edit3, X, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Clock, Calendar, Edit3, X, CheckCircle2, Sparkles, Video } from 'lucide-react';
 import { CalendarEvent } from '../types';
 import { EventConflictPair } from '../lib/conflictService';
 
@@ -116,6 +116,17 @@ export const ConflictModal: React.FC<ConflictModalProps> = ({
                       </p>
                     </div>
                   </div>
+
+                  {/* Intelligent Recommendation Box */}
+                  {pair.recommendation && (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5">
+                      <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <span className="font-semibold block text-amber-300">Otonom Orkestratör Katılım Önerisi:</span>
+                        <p className="text-slate-300 leading-relaxed text-[11px]">{pair.recommendation}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

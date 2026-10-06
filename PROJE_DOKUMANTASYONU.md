@@ -1,9 +1,10 @@
 # 📘 İnovasyon & Etkinlik Ajandası - Proje Dokümantasyonu
 
-> **Son Güncelleme:** 11 Eylül 2026  
+> **Son Güncelleme:** Ekim 2026 (16 Eylül 2026 Operasyonel Takvim Temelli)  
 > **Uygulama Adı:** İnovasyon & Etkinlik Ajandası  
 > **Kullanıcı:** Meryem Güçlü (`meriguclu123@gmail.com`)  
-> **Teknoloji Yığını:** React 18, TypeScript, Vite, Tailwind CSS, Express (Node.js), Google Gemini API, Firebase Auth & Google Workspace APIs
+> **Teknoloji Yığını:** React 19, TypeScript, Vite, Tailwind CSS v4, Express (Node.js), Asenkron Olay Kuyruğu & SSE, Google Gemini API, Firebase Auth & Google Workspace APIs  
+> **🤖 Yapay Zeka Devir Kılavuzu:** Projenin başka bir AI modelinde (Claude, ChatGPT, Cursor vb.) doğrudan yönetilebilmesi için hazırlanan tam teşekküllü mimari ve prompt rehberi için bkz: [`SISTEM_VE_AJANDA_YONETIM_KILAVUZU.md`](./SISTEM_VE_AJANDA_YONETIM_KILAVUZU.md)
 
 ---
 

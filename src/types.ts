@@ -86,6 +86,9 @@ export interface GoogleTaskItem {
   priority?: TaskPriority;
   category?: string;
   source?: 'google-tasks' | 'local';
+  // Idempotency & Conflict Resolution (Last-Write-Wins)
+  syncHash?: string;
+  updated_at?: string; // ISO 8601 timestamp for LWW arbitration
 }
 
 export interface TaskItem {

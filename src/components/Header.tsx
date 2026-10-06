@@ -6,9 +6,10 @@ interface HeaderProps {
   user: UserAuth | null;
   onLogin: () => void;
   onOpenAddModal: () => void;
-  onOpenVoiceModal?: () => void;
   onOpenGoogleMeet?: () => void;
   onOpenPdfReport?: () => void;
+  onOpenQueueMonitor?: () => void;
+  isSSEConnected?: boolean;
   onToggleMobileSidebar?: () => void;
   searchQuery: string;
   onSearchChange: (val: string) => void;
@@ -20,9 +21,10 @@ export const Header: React.FC<HeaderProps> = ({
   user,
   onLogin,
   onOpenAddModal,
-  onOpenVoiceModal,
   onOpenGoogleMeet,
   onOpenPdfReport,
+  onOpenQueueMonitor,
+  isSSEConnected = false,
   onToggleMobileSidebar,
   searchQuery,
   onSearchChange,
@@ -84,8 +86,23 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: PDF Raporu + Google Meet + Voice Assistant + "+ Yeni Ekle" Button and Google Account Avatar */}
+        {/* Right: Kuyruk & SSE + PDF Raporu + Google Meet + Voice Assistant + "+ Yeni Ekle" Button and Google Account Avatar */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {onOpenQueueMonitor && (
+            <button
+              onClick={onOpenQueueMonitor}
+              className={`p-2 sm:px-3 sm:py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer border shadow-lg ${
+                isSSEConnected
+                  ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 hover:text-white border-emerald-500/35 shadow-emerald-950/20'
+                  : 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-white border-amber-500/35 shadow-amber-950/20'
+              }`}
+              title="⚡ Asenkron Olay Yöneticisi & İş Kuyruğu (FastAPI BackgroundTasks & SSE Akışı)"
+            >
+              <span className={`w-2 h-2 rounded-full ${isSSEConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span className="hidden sm:inline text-xs font-bold">Kuyruk & SSE</span>
+            </button>
+          )}
+
           {onOpenPdfReport && (
             <button
               onClick={onOpenPdfReport}
@@ -105,21 +122,6 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Video className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
               <span className="hidden sm:inline text-xs font-bold">Meet</span>
-            </button>
-          )}
-
-          {onOpenVoiceModal && (
-            <button
-              onClick={onOpenVoiceModal}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-[#6366F1]/20 to-[#8B5CF6]/20 hover:from-[#6366F1]/30 hover:to-[#8B5CF6]/30 text-[#A5B4FC] hover:text-white border border-[#6366F1]/40 flex items-center gap-1.5 transition cursor-pointer shadow-lg shadow-[#6366F1]/10 group"
-              title="Sesli Komut ile Görev / Takvim Ekle"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EC4899] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#6366F1]"></span>
-              </span>
-              <span className="text-base sm:text-sm">🎙️</span>
-              <span className="hidden md:inline text-xs font-semibold group-hover:text-white">Sesli Asistan</span>
             </button>
           )}
 

@@ -60,6 +60,26 @@ const INITIAL_SEED_TASKS: GoogleTaskItem[] = [
     due: '2026-10-15T00:00:00.000Z',
     category: 'TÜBİTAK',
     source: 'google-tasks'
+  },
+  {
+    id: 'seed-gtask-tr72-yesil-ekonomi',
+    title: 'ℹ️ [P3] TR72 Bölgesi Yeşil Ekonomik Fırsatlar ve Zorluklar İstişare Toplantısı',
+    notes: '🔗 Toplantı Linki: https://shorturl.at/SdbGG\n🆔 Toplantı Kimliği: 852 0484 8792\n🔑 Parola: 760833\n⏰ Saat: 14:00 – 16:00\n📍 Platform: Çevrim İçi İstişare Toplantısı (Zoom/Webinar)\n\n📋 3 Aşamalı Kontrol Listesi:\n• [Hazırlık]: 16 Eylül 14:00 öncesi toplantı linki (shorturl.at/SdbGG), toplantı kimliği (852 0484 8792) ve parola (760833) kontrollerini yap; TR72 Bölgesi yeşil dönüşüm ile kadın ve genç istihdamı ön hazırlık notlarını hazırla.\n• [Uygulama]: 14:00 – 16:00 saatleri arasındaki çevrim içi istişare toplantısına aktif katılım sağla; yeşil ekonomik fırsatlar, bölgesel zorluklar ve istihdam değerlendirmelerini not al.\n• [Teslimat / Takip]: Toplantı çıktılarını derle; TÜBİTAK 2209-A ve Ar-Ge proje pazarı sürdürülebilirlik proje fikirleri havuzuna işle.',
+    status: 'needsAction',
+    due: '2026-09-16T14:00:00.000Z',
+    priority: 'low',
+    category: 'TÜBİTAK',
+    source: 'google-tasks'
+  },
+  {
+    id: 'seed-gtask-tech-pe-1',
+    title: '⚡ [P1] Tech Istanbul: Prompt Engineering 2.0 (Multimodal) Atölyesi - 1. Oturum',
+    notes: '🏢 Organizasyon: Tech Istanbul Ekibi\n💻 Platform: Online Canlı Atölye (Tech Istanbul)\n⏰ Saat: 16:00 – 20:00\n📅 Tarih: 16 Eylül 2026 Çarşamba\n🔗 Bağlantı: Tech Istanbul tarafından e-posta ile iletilecektir.\n\n📋 3 Aşamalı Kontrol Listesi:\n• [Hazırlık]: Online eğitim platformu ve çok modlu LLM araçları (Gemini, Claude, GPT) ortamını hazırla; kamera, mikrofon ve bağlantı testini yap. (14:00-16:00 TR72 toplantısı bitişi ile oturuma doğrudan geçiş yap).\n• [Uygulama]: 16:00 – 20:00 canlı atölye oturumuna aktif katıl; ileri düzey prompt teknikleri, tokenization ve yapılandırılmış çıktı pratiklerini tamamla.\n• [Teslimat / Takip]: Atölye prompt kütüphanesini ve ders notlarını GitHub/doküman arşivine kaydet; 23 Eylül 2. modül hazırlıklarını kontrol et.',
+    status: 'needsAction',
+    due: '2026-09-16T16:00:00.000Z',
+    priority: 'high',
+    category: 'Yapay Zeka',
+    source: 'google-tasks'
   }
 ];
 
@@ -171,13 +191,53 @@ export function useDailyTasks(accessToken?: string | null) {
     }
   };
 
-  // Add Task
+  // Add Task with Idempotent Hash & Last-Write-Wins (LWW) Collision Arbitration
   const addTask = async (params: {
     title: string;
     notes?: string;
     due?: string; // YYYY-MM-DD
+    syncHash?: string;
+    updated_at?: string;
+    priority?: TaskPriority;
+    category?: string;
   }) => {
     if (!params.title.trim()) return;
+
+    const nowIso = params.updated_at || new Date().toISOString();
+
+    // Split-brain prevention: Idempotent Hash check with Last-Write-Wins rule
+    if (params.syncHash) {
+      const existingIndex = tasks.findIndex(t => t.syncHash === params.syncHash);
+      if (existingIndex !== -1) {
+        const existing = tasks[existingIndex];
+        const existingTime = existing.updated_at ? new Date(existing.updated_at).getTime() : 0;
+        const incomingTime = new Date(nowIso).getTime();
+
+        // Last-Write-Wins: Only overwrite if incoming timestamp is greater or equal
+        if (incomingTime >= existingTime) {
+          const updatedTask: GoogleTaskItem = {
+            ...existing,
+            title: params.title.trim(),
+            notes: params.notes ?? existing.notes,
+            due: params.due ? `${params.due}T00:00:00.000Z` : existing.due,
+            updated_at: nowIso,
+            priority: params.priority || existing.priority,
+            category: params.category || existing.category
+          };
+
+          setTasks(prev => {
+            const next = [...prev];
+            next[existingIndex] = updatedTask;
+            return next;
+          });
+
+          return updatedTask;
+        } else {
+          // Stale write ignored (LWW)
+          return existing;
+        }
+      }
+    }
 
     if (accessToken) {
       try {
@@ -186,22 +246,32 @@ export function useDailyTasks(accessToken?: string | null) {
           notes: params.notes,
           due: params.due
         });
-        setTasks(prev => [created, ...prev]);
-        return created;
+        const stamped: GoogleTaskItem = {
+          ...created,
+          syncHash: params.syncHash,
+          updated_at: nowIso,
+          priority: params.priority,
+          category: params.category
+        };
+        setTasks(prev => [stamped, ...prev]);
+        return stamped;
       } catch (err) {
         console.warn('Fallback to local task addition:', err);
       }
     }
 
-    // Local fallback addition
+    // Local fallback addition with Idempotency stamping
     const newTask: GoogleTaskItem = {
       id: `local-task-${Date.now()}`,
       title: params.title.trim(),
       notes: params.notes || '',
       status: 'needsAction',
       due: params.due ? `${params.due}T00:00:00.000Z` : undefined,
-      category: 'Google Görev',
-      source: 'local'
+      category: params.category || 'Google Görev',
+      source: 'local',
+      syncHash: params.syncHash,
+      updated_at: nowIso,
+      priority: params.priority
     };
 
     setTasks(prev => [newTask, ...prev]);

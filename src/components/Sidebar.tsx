@@ -3,7 +3,7 @@ import {
   Calendar, Target, CheckSquare, Layers, Settings, ChevronLeft, 
   ChevronRight, ChevronDown, Sparkles, FolderKanban, ShieldAlert, 
   RefreshCw, LogIn, LogOut, User as UserIcon, Bell, Mail, FileText, CheckCircle2,
-  CalendarDays
+  CalendarDays, Cpu
 } from 'lucide-react';
 import { UserAuth } from '../types';
 
@@ -21,7 +21,8 @@ interface SidebarProps {
   onLogin: () => void;
   onLogout: () => void;
   onOpenSettings: () => void;
-  onOpenVoiceAssistant?: () => void;
+  onOpenQueueMonitor?: () => void;
+  isSSEConnected?: boolean;
   onTestMorningBriefing?: () => void;
   isTestingBriefing?: boolean;
   isCollapsed: boolean;
@@ -42,7 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogin,
   onLogout,
   onOpenSettings,
-  onOpenVoiceAssistant,
+  onOpenQueueMonitor,
+  isSSEConnected = false,
   onTestMorningBriefing,
   isTestingBriefing,
   isCollapsed,
@@ -273,19 +275,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           )}
 
-          {/* Voice Command Assistant Quick Launch */}
-          {onOpenVoiceAssistant && (
+          {/* Asenkron Olay Kuyruğu & SSE İzleyici */}
+          {onOpenQueueMonitor && (
             <button
-              onClick={onOpenVoiceAssistant}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#6366F1]/20 to-[#8B5CF6]/20 hover:from-[#6366F1]/30 hover:to-[#8B5CF6]/30 text-[#A5B4FC] hover:text-white border border-[#6366F1]/40 transition cursor-pointer shadow-md shadow-[#6366F1]/10 group"
-              title="🎙️ Sesli Komut Asistanı (Gemini AI)"
+              onClick={onOpenQueueMonitor}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#1E273D] transition cursor-pointer border border-transparent hover:border-[#263047]"
+              title="⚡ Asenkron Olay Yöneticisi & Veri Bütünlüğü Motoru"
             >
-              <span className="text-lg">🎙️</span>
+              <div className="relative shrink-0">
+                <Cpu className="w-5 h-5 text-indigo-400" />
+                <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
+                  isSSEConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                }`} />
+              </div>
               {!isCollapsed && (
                 <div className="flex-1 flex items-center justify-between text-left">
-                  <span>Sesli Asistan</span>
-                  <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#6366F1]/30 text-[#C7D2FE]">
-                    AI
+                  <span>Olay Kuyruğu & SSE</span>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                    isSSEConnected ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                  }`}>
+                    {isSSEConnected ? 'Canlı' : 'Offline'}
                   </span>
                 </div>
               )}

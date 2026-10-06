@@ -1006,5 +1006,42 @@ export const INITIAL_EVENTS: CalendarEvent[] = [
       { id: 'pat-2', text: 'Tarifname ve istemler metni yazıldı', completed: false },
       { id: 'pat-3', text: 'EPATS üzerinden resmi harç yatırıldı ve dosya sunuldu', completed: false }
     ]
+  },
+
+  // --- TR72 Bölgesi: Yeşil Ekonomik Fırsatlar ve Zorluklar İstişare Toplantısı ---
+  {
+    id: 'tr72-yesil-ekonomik-firsatlar-toplantisi',
+    title: 'ℹ️ [P3] TR72 Bölgesi: Yeşil Ekonomik Fırsatlar ve Zorluklar İstişare Toplantısı',
+    description: 'TR72 Bölgesi’nde yeşil dönüşüm sürecindeki mevcut fırsatların, karşılaşılan temel güçlüklerin ve yeşil ekonomik faaliyetlerin değerlendirilmesi amacıyla gerçekleştirilecek çevrim içi istişare toplantısı.\n\nÖzellikle kadın ve genç istihdamına yönelik çalışmalar yürüten kurum, kuruluş ve paydaşlarımızın görüş ve değerlendirmeleri toplantı için önem taşımaktadır.\n\n🔗 Toplantı Linki: https://shorturl.at/SdbGG\n🆔 Toplantı Kimliği: 852 0484 8792\n🔑 Parola: 760833',
+    startDate: '2026-09-16T14:00:00',
+    endDate: '2026-09-16T16:00:00',
+    allDay: false,
+    location: 'Çevrim İçi (Toplantı ID: 852 0484 8792, Parola: 760833)',
+    link: 'https://shorturl.at/SdbGG',
+    type: 'meeting',
+    program: 'arge-inovasyon',
+    isMandatory: false,
+    color: '#059669',
+    reminderMinutes: 60,
+    trlLevel: 3,
+    priority: 'low',
+    tags: ['Yeşil Dönüşüm', 'TR72', 'Yeşil Ekonomi', 'İstihdam', 'Kadın & Genç', 'Ar-Ge'],
+    deliverables: [
+      { 
+        id: 'tr72-deliv-1', 
+        text: '[Hazırlık]: Toplantı linki, kimlik (852 0484 8792) ve parola (760833) doğrulandı; yeşil dönüşüm ve istihdam notları hazırlandı.', 
+        completed: false 
+      },
+      { 
+        id: 'tr72-deliv-2', 
+        text: '[Uygulama]: 14:00 - 16:00 çevrim içi istişare oturumuna aktif katılım sağlandı, bölgesel ekonomik fırsatlar ve zorluklar not alındı.', 
+        completed: false 
+      },
+      { 
+        id: 'tr72-deliv-3', 
+        text: '[Teslimat / Takip]: Toplantı çıktıları derlendi, Ar-Ge ve sürdürülebilirlik proje fikirleri havuzuna işlendi.', 
+        completed: false 
+      }
+    ]
   }
 ];

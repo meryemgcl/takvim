@@ -342,5 +342,152 @@ export const TECH_ISTANBUL_BOOTCAMP_EVENTS: CalendarEvent[] = [
       { id: 'ti-del-20', text: 'Bitirme projesi sunumumu gerçekleştirdim', completed: false },
       { id: 'ti-del-21', text: 'Tech Istanbul Bootcamp sertifika başvurumu tamamladım', completed: false }
     ]
+  },
+
+  // =========================================================================
+  // Prompt Engineering 2.0 (Multimodal) Atölyesi (16 Eylül - 7 Ekim 2026)
+  // Her Çarşamba 16:00 - 20:00 | Online Canlı Atölye
+  // =========================================================================
+
+  // 1. Oturum - 16 Eylül 2026 Çarşamba
+  {
+    id: 'tech-istanbul-prompt-eng-1',
+    title: '⚡ [P1] Tech Istanbul: Prompt Engineering 2.0 (Multimodal) - 1. Oturum',
+    description: `Prompt Engineering 2.0 (Multimodal) Atölyesi Başlangıç Oturumu! 🎉
+
+🏢 Organizasyon: Tech Istanbul Ekibi
+💻 Format: Online Canlı Atölye
+⏰ Saat: 16:00 – 20:00
+📅 Tarih: 16 Eylül 2026 Çarşamba
+
+📌 Atölye Kapsamı:
+• İleri Düzey Prompt Yazım Teknikleri (Few-Shot, CoT, Role-Prompting)
+• LLM Tokenization, Context Window ve Sistem Talimatları (System Instructions)
+• Yapılandırılmış Çıktı Üretimi ve Parametre Optimizasyonu (Temperature, Top-P)
+• Uygulamalı Canlı Senaryolar & Prompt Şablonu Tasarımı
+
+🔗 Eğitim bağlantısı ve katılım linki Tech Istanbul tarafından e-posta ile paylaşılacaktır.`,
+    startDate: '2026-09-16T16:00:00',
+    endDate: '2026-09-16T20:00:00',
+    allDay: false,
+    location: 'Online Canlı Atölye (Tech Istanbul)',
+    link: 'https://tech.istanbul',
+    type: 'workshop',
+    program: 'tech-istanbul-bootcamp',
+    isMandatory: true,
+    color: '#0284c7',
+    reminderMinutes: 120,
+    priority: 'high',
+    tags: ['Tech Istanbul', 'Prompt Engineering', 'Multimodal', 'Atölye', 'GenAI', 'P1'],
+    deliverables: [
+      { id: 'ti-pe-del-1', text: '[Hazırlık]: Online eğitim ortamı ve LLM araçları (Gemini, Claude, GPT) hazırlandı; bağlantı linki kontrol edildi.', completed: false },
+      { id: 'ti-pe-del-2', text: '[Uygulama]: 16:00 – 20:00 canlı atölye oturumuna katılındı, ileri prompt teknikleri uygulandı.', completed: false },
+      { id: 'ti-pe-del-3', text: '[Teslimat / Takip]: Atölye prompt kütüphanesi notları derlendi ve GitHub reposuna kaydedildi.', completed: false }
+    ]
+  },
+
+  // 2. Oturum - 23 Eylül 2026 Çarşamba
+  {
+    id: 'tech-istanbul-prompt-eng-2',
+    title: '⚡ [P1] Tech Istanbul: Prompt Engineering 2.0 (Multimodal) - 2. Oturum',
+    description: `Prompt Engineering 2.0 (Multimodal) Atölyesi 2. Oturumu
+
+🏢 Organizasyon: Tech Istanbul Ekibi
+💻 Format: Online Canlı Atölye
+⏰ Saat: 16:00 – 20:00
+📅 Tarih: 23 Eylül 2026 Çarşamba
+
+📌 Atölye Kapsamı:
+• Çok Modlu (Multimodal) AI Modellerinin Mimarisi (Görsel, Ses, Metin Girdileri)
+• Doküman ve Çizim Analizi için Gelişmiş Görsel Promptlama (Visual Prompting)
+• Ses ve Video Verilerinden Bilgi Çıkarımı ve Özetleme
+• Multimodal Senaryolarda Hata Ayıklama ve Halüsinasyon Kontrolü`,
+    startDate: '2026-09-23T16:00:00',
+    endDate: '2026-09-23T20:00:00',
+    allDay: false,
+    location: 'Online Canlı Atölye (Tech Istanbul)',
+    link: 'https://tech.istanbul',
+    type: 'workshop',
+    program: 'tech-istanbul-bootcamp',
+    isMandatory: true,
+    color: '#0284c7',
+    reminderMinutes: 120,
+    priority: 'high',
+    tags: ['Tech Istanbul', 'Prompt Engineering', 'Multimodal AI', 'Görsel Prompting', 'P1'],
+    deliverables: [
+      { id: 'ti-pe-del-4', text: '[Hazırlık]: Çok modlu test veri setleri (grafik, PDF, ses) hazırlandı.', completed: false },
+      { id: 'ti-pe-del-5', text: '[Uygulama]: Multimodal AI promptlama pratikleri ve görsel analiz çalışmaları tamamlandı.', completed: false },
+      { id: 'ti-pe-del-6', text: '[Teslimat / Takip]: Çok modlu çıktı şablonları derlendi ve dokümantasyona işlendi.', completed: false }
+    ]
+  },
+
+  // 3. Oturum - 30 Eylül 2026 Çarşamba
+  {
+    id: 'tech-istanbul-prompt-eng-3',
+    title: '⚡ [P1] Tech Istanbul: Prompt Engineering 2.0 (Multimodal) - 3. Oturum',
+    description: `Prompt Engineering 2.0 (Multimodal) Atölyesi 3. Oturumu
+
+🏢 Organizasyon: Tech Istanbul Ekibi
+💻 Format: Online Canlı Atölye
+⏰ Saat: 16:00 – 20:00
+📅 Tarih: 30 Eylül 2026 Çarşamba
+
+📌 Atölye Kapsamı:
+• Üretken Yapay Zekâ ile Profesyonel İçerik Üretimi Pipeline'ı
+• İş Süreçlerinin Optimizasyonu (Raporlama, Kod Analizi, E-posta ve Veri Sentezi)
+• Prompt Zincirleme (Prompt Chaining) ve Çok Aşamalı İş Akışları
+• AI Araçlarının Entegrasyonu ve Verimlilik Taktikleri`,
+    startDate: '2026-09-30T16:00:00',
+    endDate: '2026-09-30T20:00:00',
+    allDay: false,
+    location: 'Online Canlı Atölye (Tech Istanbul)',
+    link: 'https://tech.istanbul',
+    type: 'workshop',
+    program: 'tech-istanbul-bootcamp',
+    isMandatory: true,
+    color: '#0284c7',
+    reminderMinutes: 120,
+    priority: 'high',
+    tags: ['Tech Istanbul', 'İçerik Üretimi', 'İş Akışı Optimizasyonu', 'Prompt Chaining', 'P1'],
+    deliverables: [
+      { id: 'ti-pe-del-7', text: '[Hazırlık]: Süreç optimizasyonu için örnek vaka senaryosu belirlendi.', completed: false },
+      { id: 'ti-pe-del-8', text: '[Uygulama]: 16:00 – 20:00 oturumunda çok aşamalı prompt zinciri kurgulandı.', completed: false },
+      { id: 'ti-pe-del-9', text: '[Teslimat / Takip]: Hazırlanan iş akışı optimizasyon şablonu paylaşıldı.', completed: false }
+    ]
+  },
+
+  // 4. Oturum - 7 Ekim 2026 Çarşamba (Final & Kapanış)
+  {
+    id: 'tech-istanbul-prompt-eng-4',
+    title: '⚡ [P1] Tech Istanbul: Prompt Engineering 2.0 (Multimodal) - 4. Oturum (Final)',
+    description: `Prompt Engineering 2.0 (Multimodal) Atölyesi Kapanış & Final Oturumu! 🎓
+
+🏢 Organizasyon: Tech Istanbul Ekibi
+💻 Format: Online Canlı Atölye
+⏰ Saat: 16:00 – 20:00
+📅 Tarih: 7 Ekim 2026 Çarşamba
+
+📌 Atölye Kapsamı:
+• Katılımcı Uygulamalı Proje Sunumları ve Canlı Demolar
+• Sektörel Kullanım Senaryoları ve En İyi Uygulamalar (Best Practices)
+• Eğitmen Değerlendirmeleri ve Geri Bildirim
+• Atölye Tamamlama Sertifikasyonu ve Kapanış`,
+    startDate: '2026-10-07T16:00:00',
+    endDate: '2026-10-07T20:00:00',
+    allDay: false,
+    location: 'Online Canlı Atölye (Tech Istanbul)',
+    link: 'https://tech.istanbul',
+    type: 'milestone',
+    program: 'tech-istanbul-bootcamp',
+    isMandatory: true,
+    color: '#0284c7',
+    reminderMinutes: 120,
+    priority: 'critical',
+    tags: ['Tech Istanbul', 'Prompt Engineering', 'Final Sunumu', 'Sertifika', 'P1'],
+    deliverables: [
+      { id: 'ti-pe-del-10', text: '[Hazırlık]: Final prompt mühendisliği mini projesi ve sunum demosu hazırlandı.', completed: false },
+      { id: 'ti-pe-del-11', text: '[Uygulama]: 16:00 – 20:00 final oturumunda proje sunumu gerçekleştirildi.', completed: false },
+      { id: 'ti-pe-del-12', text: '[Teslimat / Takip]: Atölye katılım ve başarı sertifikası teslim alındı.', completed: false }
+    ]
   }
 ];

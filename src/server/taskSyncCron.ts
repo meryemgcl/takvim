@@ -1,5 +1,6 @@
 import { GoogleTaskItem, TaskItem, RolloverReport } from '../types';
 import { sendRolloverNotificationEmail } from './emailAlertService';
+import { sseManager } from './asyncQueueManager';
 
 export interface ExecuteRolloverParams {
   localTasks?: (TaskItem | GoogleTaskItem)[];
@@ -59,6 +60,18 @@ export async function executeTaskRolloverSync({
     });
     emailSent = emailResult.sent;
   }
+
+  // TYPE_2: [ROLLOVER_COMPLETED] "↩️ Görev Devri: {Sayı} adet dün görevi bugüne taşındı."
+  const count = rolledOverTasks.length;
+  sseManager.broadcast({
+    type: 'ROLLOVER_COMPLETED',
+    message: `↩️ Görev Devri: ${count} adet dün görevi bugüne taşındı.`,
+    timestamp: new Date().toISOString(),
+    data: {
+      rolledOverCount: count,
+      targetDate: todayStr
+    }
+  });
 
   return {
     timestamp: new Date().toISOString(),

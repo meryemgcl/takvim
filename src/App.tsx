@@ -15,6 +15,7 @@ import { NordicCalendarLayout } from './components/NordicCalendarLayout';
 import { TaskPanel } from './components/TaskPanel';
 import { InnovationRoadmapView } from './components/InnovationRoadmapView';
 import { InnovationRadar } from './components/InnovationRadar';
+import { ProgressDashboard } from './components/ProgressDashboard';
 import { BulkSyncModal } from './components/BulkSyncModal';
 import { AddEditEventModal } from './components/AddEditEventModal';
 import { AiParseModal } from './components/AiParseModal';
@@ -22,8 +23,9 @@ import { ConfirmationModal } from './components/ConfirmationModal';
 import { GmailModal } from './components/GmailModal';
 import { NotificationManagerModal } from './components/NotificationManagerModal';
 import { ConflictModal } from './components/ConflictModal';
-import { VoiceCommandModal } from './components/VoiceCommandModal';
 import { PdfReportModal } from './components/PdfReportModal';
+import { QueueMonitorModal } from './components/QueueMonitorModal';
+import { useAsyncQueueSSE } from './lib/useAsyncQueueSSE';
 import { initAuth, googleSignIn, logout } from './lib/firebase';
 import { addEventToGoogleCalendar, deleteEventFromGoogleCalendar } from './lib/googleCalendar';
 import { downloadICSFile } from './lib/icsGenerator';
@@ -96,11 +98,113 @@ export default function App() {
   const [isGmailModalOpen, setIsGmailModalOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
-  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
   const [canInstallPWA, setCanInstallPWA] = useState(false);
   const [selectedEditEvent, setSelectedEditEvent] = useState<CalendarEvent | null>(null);
   const [addModalDefaultDate, setAddModalDefaultDate] = useState<string>('');
   const [isTestingBriefing, setIsTestingBriefing] = useState<boolean>(false);
+  const [isSyncingHistory, setIsSyncingHistory] = useState<boolean>(false);
+
+  // Background Automatic Persistent JSON Sync (Zero Data Loss guarantee)
+  useEffect(() => {
+    if (!tasks || tasks.length === 0) return;
+    const timer = setTimeout(() => {
+      fetch('/api/tasks/history/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks })
+      }).catch(err => console.warn('Background dataset sync note:', err.message));
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [tasks]);
+
+  const handleSyncPersistentHistory = async () => {
+    setIsSyncingHistory(true);
+    try {
+      const response = await fetch('/api/tasks/history/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tasks })
+      });
+      if (response.ok) {
+        showToast('💾 Görevler ve tarihçe kalıcı veritabanına (tasks_history.json) başarıyla kaydedildi!');
+      }
+    } catch (err) {
+      console.error('Failed syncing to persistent dataset:', err);
+    } finally {
+      setIsSyncingHistory(false);
+    }
+  };
+
+  // =========================================================================
+  // ARCHITECTURAL MANDATE: Calendar-to-Tasks Daily Sync
+  // Every day, all active calendar events scheduled for that day are automatically
+  // processed, structured with 3-stage breakdown, and mirrored into Google Tasks.
+  // =========================================================================
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayEvents = events.filter(e => {
+      const eventDate = e.startDate.split('T')[0];
+      return eventDate === todayStr;
+    });
+
+    if (todayEvents.length === 0) return;
+
+    todayEvents.forEach(ev => {
+      const cleanTitle = ev.title.replace(/^(🚨|⚡|📌|ℹ️)\s*\[P\d\]\s*/i, '').trim();
+      const badge = ev.priority === 'critical' ? '🚨 [P0]' :
+                    ev.priority === 'high' ? '⚡ [P1]' :
+                    ev.priority === 'low' ? 'ℹ️ [P3]' : '📌 [P2]';
+
+      const taskTitle = ev.title.startsWith('🚨') || ev.title.startsWith('⚡') || ev.title.startsWith('📌') || ev.title.startsWith('ℹ️') 
+        ? ev.title 
+        : `${badge} ${ev.title}`;
+
+      // Deterministic Idempotency Hash (Event ID + Due Date)
+      const syncHash = `cal_sync_${ev.id}_${todayStr}`;
+      const updatedAt = new Date().toISOString();
+
+      const prep = ev.deliverables?.find(d => d.text.toLowerCase().includes('hazırlık') || d.text.toLowerCase().includes('prep'))?.text ||
+        `[Hazırlık]: ${cleanTitle} için toplantı bağlantısı, platform ve teknik ortam testini tamamla.`;
+      const exec = ev.deliverables?.find(d => d.text.toLowerCase().includes('uygulama') || d.text.toLowerCase().includes('exec'))?.text ||
+        `[Uygulama]: Canlı oturuma aktif katılım sağla, notları al ve temel çalışmaları tamamla.`;
+      const deliv = ev.deliverables?.find(d => d.text.toLowerCase().includes('teslimat') || d.text.toLowerCase().includes('takip') || d.text.toLowerCase().includes('deliv'))?.text ||
+        `[Teslimat / Takip]: İlgili doküman ve çıktıları kaydet, bir sonraki adımı planla.`;
+
+      const notes = `🏢 Program: ${ev.program}\n` +
+        `💻 Format / Konum: ${ev.location || 'Online'}\n` +
+        `⏰ Saat: ${ev.startDate.includes('T') ? ev.startDate.split('T')[1].substring(0, 5) : 'Gün Boyu'}\n` +
+        (ev.link ? `🔗 Bağlantı: ${ev.link}\n` : '') +
+        `\n📋 3 Aşamalı Kontrol Listesi:\n` +
+        `• ${prep}\n` +
+        `• ${exec}\n` +
+        `• ${deliv}`;
+
+      addTask({
+        title: taskTitle,
+        notes,
+        due: todayStr,
+        syncHash,
+        updated_at: updatedAt,
+        priority: ev.priority as any,
+        category: ev.program
+      });
+    });
+  }, [events, tasks.length]);
+
+  // Asenkron Olay Yöneticisi & SSE Canlı Akış Hook'u
+  const {
+    isConnected: isSSEConnected,
+    lastPing,
+    jobs: queueJobs,
+    stats: queueStats,
+    notifications: liveNotifications,
+    activeToast: sseToast,
+    dismissToast: dismissSSEToast,
+    simulateScenario,
+    clearCache: clearQueueCache,
+    refreshJobs
+  } = useAsyncQueueSSE();
 
   // Setup PWA prompt listener
   useEffect(() => {
@@ -148,6 +252,7 @@ export default function App() {
 
   // Loading states
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [syncingEventId, setSyncingEventId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -215,6 +320,8 @@ export default function App() {
 
   // Auth actions
   const handleLogin = async () => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
     try {
       const res = await googleSignIn();
       if (res) {
@@ -228,15 +335,24 @@ export default function App() {
         showToast(`Hoş geldiniz ${res.user.displayName || res.user.email}! Google Takvim bağlandı.`);
       }
     } catch (err: any) {
-      console.error('Login error:', err);
       const msg = String(err?.message || '');
-      if (msg.includes('popup-closed-by-user')) {
+      const code = String(err?.code || '');
+      if (msg.includes('cancelled-popup-request') || code.includes('cancelled-popup-request')) {
+        // Benign cancellation - user closed or another click superseded
+        return;
+      }
+      if (msg.includes('popup-closed-by-user') || code.includes('popup-closed-by-user')) {
         showToast('Giriş penceresi kapatıldı.');
+      } else if (msg.includes('popup-blocked') || code.includes('popup-blocked')) {
+        showToast('Açılır pencere (popup) engellendi. Lütfen tarayıcınızdan pop-up pencerelere izin verin.');
       } else if (msg.includes('Database is closing') || msg.includes('closing/hidden')) {
         showToast('Oturum depolaması yenilendi. Lütfen tekrar "Giriş Yap" butonuna tıklayın.');
       } else {
+        console.error('Login error:', err);
         showToast('Giriş yapılırken bir sorun oluştu: ' + (err.message || ''));
       }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -628,7 +744,8 @@ export default function App() {
         onLogin={handleLogin}
         onLogout={handleLogout}
         onOpenSettings={() => setIsSettingsModalOpen(true)}
-        onOpenVoiceAssistant={() => setIsVoiceModalOpen(true)}
+        onOpenQueueMonitor={() => setIsQueueModalOpen(true)}
+        isSSEConnected={isSSEConnected}
         onTestMorningBriefing={handleTestMorningBriefing}
         isTestingBriefing={isTestingBriefing}
         isCollapsed={isSidebarCollapsed}
@@ -651,8 +768,9 @@ export default function App() {
             setAddModalDefaultDate('');
             setIsAddModalOpen(true);
           }}
-          onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
           onOpenPdfReport={() => setIsPdfModalOpen(true)}
+          onOpenQueueMonitor={() => setIsQueueModalOpen(true)}
+          isSSEConnected={isSSEConnected}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -663,6 +781,14 @@ export default function App() {
         {/* Main Content Body */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
           
+          {/* Real-Time Live Progress Dashboard & Persistent Dataset Radar */}
+          <ProgressDashboard 
+            tasks={tasks}
+            onToggleTask={toggleTask}
+            onSyncPersistentHistory={handleSyncPersistentHistory}
+            isSyncingHistory={isSyncingHistory}
+          />
+
           {/* Secondary View Switcher & Filter Pills */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#151B2B] p-3.5 rounded-2xl border border-[#263047]">
             {/* View Switcher Pills */}
@@ -936,38 +1062,65 @@ export default function App() {
         onClose={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
       />
 
-      {/* Voice Command Assistant Modal */}
-      <VoiceCommandModal
-        isOpen={isVoiceModalOpen}
-        onClose={() => setIsVoiceModalOpen(false)}
-        user={user}
-        onAddLocalEvent={(newEvent: CalendarEvent) => {
-          setEvents(prev => [newEvent, ...prev]);
-        }}
-        onAddLocalTask={async (newTask) => {
-          await addTask({
-            title: newTask.title,
-            notes: newTask.notes || (newTask.category ? `Kategori: ${newTask.category}` : undefined),
-            due: newTask.dueDate
-          });
-        }}
-        onShowToast={(msg: string) => showToast(msg)}
-      />
-
       {/* PDF Report & Documentation Modal */}
       <PdfReportModal
         isOpen={isPdfModalOpen}
         onClose={() => setIsPdfModalOpen(false)}
       />
 
-      {/* Floating Voice Assistant Action for Mobile */}
-      <button
-        onClick={() => setIsVoiceModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 md:hidden w-14 h-14 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] text-white shadow-2xl shadow-[#6366F1]/50 flex items-center justify-center cursor-pointer border border-white/20 active:scale-95 transition"
-        title="Sesli Komut ile Görev Ekle"
-      >
-        <span className="text-2xl">🎙️</span>
-      </button>
+      {/* Asenkron Olay Yöneticisi & SSE Kuyruk İzleme Modalı */}
+      <QueueMonitorModal
+        isOpen={isQueueModalOpen}
+        onClose={() => setIsQueueModalOpen(false)}
+        isConnected={isSSEConnected}
+        lastPing={lastPing}
+        jobs={queueJobs}
+        stats={queueStats}
+        notifications={liveNotifications}
+        onSimulateScenario={simulateScenario}
+        onClearCache={clearQueueCache}
+        onRefresh={refreshJobs}
+      />
+
+      {/* Real-Time Live SSE Notification Toast (TYPE_1, TYPE_2, TYPE_3) */}
+      {sseToast && (
+        <div 
+          onClick={() => {
+            setIsQueueModalOpen(true);
+            dismissSSEToast();
+          }}
+          className="fixed top-5 right-5 z-50 max-w-sm w-full bg-[#151B2B]/95 backdrop-blur-md border border-[#6366F1]/50 p-4 rounded-2xl shadow-2xl shadow-[#6366F1]/20 cursor-pointer animate-fade-in hover:border-[#6366F1] transition"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className={`w-2.5 h-2.5 rounded-full ${
+                sseToast.type === 'TASK_ASSIGNED' ? 'bg-indigo-400 animate-ping' :
+                sseToast.type === 'ROLLOVER_COMPLETED' ? 'bg-amber-400' : 'bg-emerald-400'
+              }`} />
+              <span className="text-[11px] font-bold tracking-wider uppercase text-indigo-300">
+                {sseToast.type === 'TASK_ASSIGNED' ? 'TYPE_1: YENİ GÖREV' :
+                 sseToast.type === 'ROLLOVER_COMPLETED' ? 'TYPE_2: GÖREV DEVRİ' : 'TYPE_3: SABAH BRİFİNGİ'}
+              </span>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                dismissSSEToast();
+              }}
+              className="text-slate-400 hover:text-white text-xs"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="mt-2 text-xs font-semibold text-white">
+            {sseToast.message}
+          </div>
+          <div className="mt-1 flex items-center justify-between text-[10px] text-slate-400">
+            <span>Kuyrukta incelemek için tıklayın</span>
+            <span>{new Date(sseToast.timestamp).toLocaleTimeString('tr-TR')}</span>
+          </div>
+        </div>
+      )}
 
     </div>
   );

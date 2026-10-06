@@ -337,20 +337,27 @@ export async function rolloverOverdueGoogleTasks(
 
   for (const task of overdueTasks) {
     const originalDate = extractDateFromGoogleDue(task.due) || 'Geçmiş';
-    const rolloverTag = `[Dünden Devredildi: ${originalDate}]`;
-    const newNotes = task.notes && task.notes.includes('Devredildi')
+    const rolloverTag = `[Dünden Devretti ↩️: ${originalDate}]`;
+    const newNotes = task.notes && task.notes.includes('Dünden Devretti')
       ? task.notes
       : `${rolloverTag} ${task.notes || ''}`.trim();
+    
+    // Also prefix title if not already tagged
+    const newTitle = task.title.includes('Dünden Devretti')
+      ? task.title
+      : `[Dünden Devretti ↩️] ${task.title}`;
 
     try {
       if (accessToken && task.source === 'google-tasks') {
         const patched = await patchGoogleTask(accessToken, task.id, {
+          title: newTitle,
           due: todayDueIso,
           notes: newNotes
         });
 
         const rolledItem: GoogleTaskItem = {
           ...patched,
+          title: newTitle,
           due: todayDueIso,
           notes: newNotes,
           isRolledOver: true,
@@ -366,6 +373,7 @@ export async function rolloverOverdueGoogleTasks(
         // Local rollover
         const rolledItem: GoogleTaskItem = {
           ...task,
+          title: newTitle,
           due: todayDueIso,
           notes: newNotes,
           isRolledOver: true,
